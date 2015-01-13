@@ -1,35 +1,52 @@
 #!/usr/bin/python
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk
+import os
 
 class GridWindow(Gtk.Window):
 
     def __init__(self):
         Gtk.Window.__init__(self, title="nvPY - Gtk")
 
+        # Test
+        icon = '/usr/share/icons/Numix-Circle-Light/48x48/apps/notes.svg'
+
         self.set_default_size(1200, 700)
+        self.set_default_icon_from_file(icon)
 
         self.grid = Gtk.Grid()
+        self.grid.set_column_spacing(3)
+        self.grid.set_row_spacing(3)
         self.add(self.grid)
 
-        search = Gtk.Entry()
-        search.set_text("Search me")
-        self.grid.attach(search, 0, 0, 3, 1)
+        # Set styles
+        # screen = Gdk.Screen.get_default()
 
+        # css_provider = Gtk.CssProvider()
+        # full_path = os.path.realpath(__file__)
+        # css_provider.load_from_path(os.path.dirname(full_path) + '/style-gtk.css')
+
+        # context = Gtk.StyleContext()
+        # context.add_provider_for_screen(screen, css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
+
+        search = self.create_searchbox()
         text = self.create_textview()
-
         tree = self.create_listbox()
-
         statusbar = self.create_statusbar()
-
         menu = self.create_menu()
 
-        # self.grid.attach(scrolledwindow, 1, 1, 3, 1)
+        self.grid.attach(search, 0, 0, 3, 1)
         self.grid.attach(tree, 0, 1, 1, 1)
         self.grid.attach_next_to(text, tree, Gtk.PositionType.RIGHT, 2, 1)
         self.grid.attach(statusbar, 0, 2, 1, 1)
         self.grid.attach(menu, 0, 1, 1, 1)
 
-        self.create_app_indicator('/usr/share/icons/Numix-Circle-Light/48x48/apps/notes.svg')
+        self.create_app_indicator(icon)
+
+    def create_searchbox(self):
+        search = Gtk.Entry()
+        search.set_text("Search me")
+
+        return search
 
     def create_textview(self):
         scrolledwindow = Gtk.ScrolledWindow()
@@ -47,18 +64,19 @@ class GridWindow(Gtk.Window):
         return scrolledwindow
 
     def create_listbox(self):
-        store = Gtk.ListStore(str, str)
-        treeiter = store.append(["note1 first line", "08:00"])
-        treeiter = store.append(["note2 first line", "08:10"])
-        treeiter = store.append(["note3 first line that is really longggggggggggg", "08:20"])
+        store = Gtk.ListStore(str, str, str)
+        treeiter = store.append(["note1 first line", "08:00", ""])
+        treeiter = store.append(["note2 first line\ntag1 tag2 tag3", "08:10", "tag1 tag2 tag3"])
+        treeiter = store.append(["note3 first line that is really longggggggggggg", "08:20", ""])
 
         tree = Gtk.TreeView(store)
         tree.set_headers_visible(False)
 
         renderer = Gtk.CellRendererText()
-        column = Gtk.TreeViewColumn("Note", renderer, text=0)
-        tree.append_column(column)
-
+        title = Gtk.TreeViewColumn("Titletag1", renderer, text=0)
+        time = Gtk.TreeViewColumn("Time", renderer, text=1)
+        tree.append_column(title)
+        tree.append_column(time)
 
         return tree
 
