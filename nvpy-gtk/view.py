@@ -39,9 +39,10 @@ class NotesList():
             tags = utils.sanitise_tags(', '.join(n.note['tags'])) # sanitise tags
             pinned = utils.note_pinned(n.note)
 
+            formated_title = '<b>%s</b>' % title
             string_of_tags = ', '.join(tags) # join tags for display; could be moved to utils
 
-            self.model.append([title, modifydate, string_of_tags, pinned])
+            self.model.append([formated_title, modifydate, string_of_tags, pinned])
 
 
         # print len(nn), len(self.notes_db.notes)
