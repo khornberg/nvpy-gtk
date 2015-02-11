@@ -7,11 +7,14 @@ nvpy-gtk is a Gtk themed nvpy. It tries to be prettier.
 I have developed it on Ubuntu and that is the only place I have tested it.
 I have added a Python dependency for [arrow](http://crsmithdev.com/arrow/) to have nice times in the notes list.
 
-## Running
+Running
+=======
+
 You will want to clone and run it directly from the source folder. It still uses your configuration and normal `.nvpy` folder.
 Presently there is no ability to edit your notes, only to view your notes.
 
-## Contributions
+Contributions
+=============
 
 Anything helps. Some focuses are:
 
@@ -19,6 +22,9 @@ Anything helps. Some focuses are:
 * prettier - custom Gtk?
 * actual functionality
 * tests
+
+Warning
+=======
 
 Be warned that I am new to Python. If I have something done in a "non-Python" way, please let me know. I come from a Javascript and PHP back round (I still want to put semi-colons at the end of each line).
 
