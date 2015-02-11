@@ -10,7 +10,7 @@ import urllib2
 from arrow import Arrow
 
 # first line with non-whitespace should be the title
-note_title_re = re.compile('\s*(.*)\n?')
+note_title_re = re.compile('\s*(.*)\n+(\s*.*)?', re.MULTILINE)
 
 
 def generate_random_key():
@@ -24,7 +24,7 @@ def generate_random_key():
 def get_note_title(note):
     mo = note_title_re.match(note.get('content', ''))
     if mo:
-        return mo.groups()[0]
+        return style_note_title_snippet(mo.groups())
     else:
         return ''
 
@@ -141,6 +141,18 @@ def sanitise_tags(tags):
 
     else:
         return illegals_removed.split(',')
+
+
+def style_note_title_snippet(snippet):
+    title = snippet[0].strip()
+    first_line = snippet[1].strip()
+
+    return '<b>%s</b>\n<small><span fgcolor="#666">%s</span></small>' % (title, first_line)
+
+
+# def style_note_modifydate(time):
+#     return '<small>%s</small>' % ti
+
 
 
 def sort_by_title_pinned(a, b):

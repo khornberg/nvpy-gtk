@@ -34,18 +34,21 @@ class NotesList():
         for n in self.notes_list_model.list:
             i = self.notes_list_model.list.index(n)
 
-            title = utils.get_note_title(n.note)
+            title_snippet = utils.get_note_title(n.note)
             modifydate = utils.human_date(n.note['modifydate'])
             tags = utils.sanitise_tags(', '.join(n.note['tags'])) # sanitise tags
             pinned = utils.note_pinned(n.note)
 
-            formated_title = '<b>%s</b>' % title
             string_of_tags = ', '.join(tags) # join tags for display; could be moved to utils
 
-            self.model.append([formated_title, modifydate, string_of_tags, pinned])
+            self.model.append([title_snippet, modifydate, string_of_tags, pinned, n.key])
 
 
         # print len(nn), len(self.notes_db.notes)
+
+    def get_note(self, key):
+        idx = self.notes_list_model.get_idx(key)
+        return self.notes_list_model.list[idx].note
 
 
 class nvpyView(Gtk.Window):
@@ -55,6 +58,7 @@ class nvpyView(Gtk.Window):
         handlers = {
             'gtk_main_quit': Gtk.main_quit,
             'search_notes': self.refresh_filter,
+            'show_note': self.show_note,
         }
 
         # Build ui from glade file
@@ -64,8 +68,8 @@ class nvpyView(Gtk.Window):
 
         # notes list model, class NotesListModel from nvpy.py
         # Populate model
-        #                                                           title, modtime, tags, pinned
-        self.notes_list = NotesList(notes_list_model, Gtk.ListStore(str,   str,     str,  bool))
+        #                                                           title, modtime, tags, pinned key
+        self.notes_list = NotesList(notes_list_model, Gtk.ListStore(str,   str,     str,  bool,  str))
         self.notes_list.fill() # data from notes_list_model which has data from the notes_db
 
         # Create filter
@@ -85,14 +89,49 @@ class nvpyView(Gtk.Window):
         self.notes_treeview.append_column(title_col)
 
         # Date column
-        title_col2   = self.builder.get_object('treeviewcolumn2')
+        time_col   = self.builder.get_object('treeviewcolumn2')
         render_text2 = Gtk.CellRendererText()
         # render_text2.props.ellipsize = Pango.EllipsizeMode.END
-        title_col2.pack_start(render_text2, True)
-        title_col2.add_attribute(render_text2, 'markup', 1)
-        self.notes_treeview.append_column(title_col2)
+        time_col.pack_start(render_text2, True)
+        time_col.add_attribute(render_text2, 'markup', 1)
+        self.notes_treeview.append_column(time_col)
+
+        # Text box
+        self.text_view = self.builder.get_object('textview1')
+
+        # Load Styles
+        style_provider = Gtk.CssProvider()
+
+        css = """
+        #nvpyWindow {
+            background-color: #FFF;
+        }
+        #nvpyNoteList {
+            border-bottom-color: #CCC;
+            border-bottom-width: 1px;
+            border-bottom-style: solid;
+        }
+        #nvpyNoteList column:nth-child(last) {
+            color: #666;
+            font-size: 6;
+        }
+        """
+
+        style_provider.load_from_data(css)
+
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(),
+            style_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+
 
         self.window = self.builder.get_object("window1")
+
+        # Name the window parts for styling
+        self.window.set_name("nvpyWindow")
+        self.notes_treeview.set_name("nvpyNoteList")
+
         self.window.show()
 
     # search notes
@@ -124,7 +163,16 @@ class nvpyView(Gtk.Window):
     def refresh_filter(self, widget):
         self.search_filter.refilter()
 
+    def show_note(self, selection):
+        key = None
 
+        model, treeiter = selection.get_selected()
+        if treeiter != None:
+            key = model[treeiter][4]
+
+        note = self.notes_list.get_note(key)
+        self.textbuffer = self.text_view.get_buffer()
+        self.textbuffer.set_text(note['content'])
 
 
 def show():
