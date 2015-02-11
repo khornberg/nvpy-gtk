@@ -63,7 +63,7 @@ class nvpyView(Gtk.Window):
 
         # Build ui from glade file
         self.builder = Gtk.Builder()
-        self.builder.add_from_file('test.glade')
+        self.builder.add_from_file('ui.glade')
         self.builder.connect_signals(handlers)
 
         # notes list model, class NotesListModel from nvpy.py
