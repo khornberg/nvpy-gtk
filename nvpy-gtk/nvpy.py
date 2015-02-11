@@ -85,8 +85,8 @@ class Config:
                     'search_tags': '1',
                     'sort_mode': '1',
                     'pinned_ontop': '1',
-                    'db_path': os.path.join(home, '.nvpy'),
-                    'txt_path': os.path.join(home, '.nvpy/notes'),
+                    'db_path': os.path.join(home, '.nvpy-gtk'),
+                    'txt_path': os.path.join(home, '.nvpy-gtk/notes'),
                     'font_family': 'Courier',  # monospaced on all platforms
                     'font_size': '10',
                     'list_font_family': 'Helvetica',  # sans on all platforms
