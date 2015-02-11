@@ -2,58 +2,11 @@
 from gi.repository import Gtk, Gdk, Pango
 import os
 import utils
-
-# Class to interact with the model and notes list from the ui
-# This is passed a Gtk.ListStore for the actual model
-#
-# Simple note is optional
-# notes_db is the database class
-# NotesListModel is a list of key, dict for the notes
-# NotesList is a set of helpers for the ui to interact with to get data
-#
-# [simplenote] => notes_db => NotesListModel => NotesList
-class NotesList():
-
-    def __init__(self, notes_list_model, list_store):
-        self.notes_list_model = notes_list_model
-        self.model = list_store
-
-    def fill(self):
-        # import pickle
-        # print pickle.dumps(nn)
-
-        # gets the id or key of single note
-        # print self.notes_list_model.get_idx('b4f709b924b6401c4cbb354771a531')
-
-        # list is an array of objects with key and note
-        # note is a dict
-        # print pickle.dumps(self.notes_list_model.list[6].note)
-        # print self.notes_list_model.list[6].note['content']
-        # print self.notes_list_model.list[6].key
-
-        for n in self.notes_list_model.list:
-            i = self.notes_list_model.list.index(n)
-
-            title_snippet = utils.get_note_title(n.note)
-            modifydate = utils.human_date(n.note['modifydate'])
-            tags = utils.sanitise_tags(', '.join(n.note['tags'])) # sanitise tags
-            pinned = utils.note_pinned(n.note)
-
-            string_of_tags = ', '.join(tags) # join tags for display; could be moved to utils
-
-            self.model.append([title_snippet, modifydate, string_of_tags, pinned, n.key])
-
-
-        # print len(nn), len(self.notes_db.notes)
-
-    def get_note(self, key):
-        idx = self.notes_list_model.get_idx(key)
-        return self.notes_list_model.list[idx].note
-
+from notes import NotesList, NotesListModel
 
 class nvpyView(Gtk.Window):
 
-    def __init__(self, notes_list_model):
+    def __init__(self, config):
         # Map handlers from glade ui
         handlers = {
             'gtk_main_quit': Gtk.main_quit,
@@ -69,7 +22,7 @@ class nvpyView(Gtk.Window):
         # notes list model, class NotesListModel from nvpy.py
         # Populate model
         #                                                           title, modtime, tags, pinned key
-        self.notes_list = NotesList(notes_list_model, Gtk.ListStore(str,   str,     str,  bool,  str))
+        self.notes_list = NotesList(config, Gtk.ListStore(str,   str,     str,  bool,  str))
         self.notes_list.fill() # data from notes_list_model which has data from the notes_db
 
         # Create filter
@@ -110,10 +63,6 @@ class nvpyView(Gtk.Window):
             border-bottom-color: #CCC;
             border-bottom-width: 1px;
             border-bottom-style: solid;
-        }
-        #nvpyNoteList column:nth-child(last) {
-            color: #666;
-            font-size: 6;
         }
         """
 
@@ -170,9 +119,9 @@ class nvpyView(Gtk.Window):
         if treeiter != None:
             key = model[treeiter][4]
 
-        note = self.notes_list.get_note(key)
-        self.textbuffer = self.text_view.get_buffer()
-        self.textbuffer.set_text(note['content'])
+            note = self.notes_list.get_note(key)
+            self.textbuffer = self.text_view.get_buffer()
+            self.textbuffer.set_text(note['content'])
 
 
 def show():

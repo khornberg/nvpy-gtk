@@ -34,7 +34,6 @@ import codecs
 import ConfigParser
 import logging
 from logging.handlers import RotatingFileHandler
-from notes_db import NotesDB, SyncError, ReadError, WriteError
 import os
 import sys
 import time
@@ -155,32 +154,6 @@ class Config:
         self.rest_css_path = cp.get(cfg_sec, 'rest_css_path')
 
 
-class NotesListModel(SubjectMixin):
-    """
-    @ivar list: List of (str key, dict note) objects.
-    """
-    def __init__(self):
-        # call mixin ctor
-        SubjectMixin.__init__(self)
-
-        self.list = []
-        self.match_regexps = []
-
-    def set_list(self, alist):
-        self.list = alist
-        self.notify_observers('set:list', None)
-
-    def get_idx(self, key):
-        """Find idx for passed LOCAL key.
-        """
-        found = [i for i, e in enumerate(self.list) if e.key == key]
-        if found:
-            return found[0]
-
-        else:
-            return -1
-
-
 class Controller:
     """Main application class.
     """
@@ -239,48 +212,12 @@ class Controller:
                 # Couldn't find the user-defined css file. Use docutils css instead.
                 self.config.rest_css_path = None
 
-        self.notes_list_model = NotesListModel()
-
-        # read our database of notes into memory
-        # and sync with simplenote.
-        try:
-            self.notes_db = NotesDB(self.config)
-
-        except ReadError, e:
-            emsg = "Please check nvpy.log.\n" + str(e)
-            print 'Sync error: %s' % emsg
-            # self.view.show_error('Sync error', emsg)
-            exit(1)
-
+        # Try to connect to the notes database
+        # Moved to view.py
 
         # End init for Controller
 
-    def helper_save_sync_msg(self):
 
-        # Saving 2 notes. Syncing 3 notes, waiting for simplenote server.
-        # All notes saved. All notes synced.
-
-        saven = self.notes_db.get_save_queue_len()
-
-        if self.config.simplenote_sync:
-            syncn = self.notes_db.get_sync_queue_len()
-            wfsn = self.notes_db.waiting_for_simplenote
-        else:
-            syncn = wfsn = 0
-
-        savet = 'Saving %d notes.' % (saven,) if saven > 0 else ''
-        synct = 'Waiting to sync %d notes.' % (syncn,) if syncn > 0 else ''
-        wfsnt = 'Syncing with simplenote server.' if wfsn else ''
-
-        return ' '.join([i for i in [savet, synct, wfsnt] if i])
-
-    # fill up the model with the data from the notes_db from nvpy
-    def notes_list_model_fill(self):
-        # nn is a list of (key, note) objects
-        nn, match_regexp, active_notes = self.notes_db.filter_notes()
-        # this will trigger the list_change event
-        self.notes_list_model.set_list(nn)
-        self.notes_list_model.match_regexp = match_regexp
 
 
     def main_loop(self):
@@ -315,9 +252,10 @@ class Controller:
         # note = self.notes_db.get_note(key)
         # print 'saving single note'
         # self.notes_db.helper_save_note(key, note)
-        self.notes_list_model_fill()
+
+        # self.notes_list_model_fill()
         # Fill the model for the list
-        view.nvpyView(self.notes_list_model)
+        nvpyView = view.nvpyView(self.config)
 
         # v = view.nvpyView(self.notes_db)
 
@@ -330,33 +268,7 @@ class Controller:
         # Save before exit
         # from observer_view_close part of Controller class in nvpy.py.bak
 
-        # check that everything has been saved and synced before exiting
-
-        # first make sure all our queues are up to date
-        self.notes_db.save_threaded()
-        if self.config.simplenote_sync:
-            self.notes_db.sync_to_server_threaded(wait_for_idle=False)
-            syncn = self.notes_db.get_sync_queue_len()
-            wfsn = self.notes_db.waiting_for_simplenote
-        else:
-            syncn = wfsn = 0
-
-        # then check all queues
-        saven = self.notes_db.get_save_queue_len()
-
-        # if there's still something to do, warn the user.
-        if saven or syncn or wfsn:
-            msg = "Are you sure you want to exit? I'm still busy: " + self.helper_save_sync_msg()
-            really_want_to_exit = False #force save not connected to the view self.view.askyesno("Confirm exit", msg)
-
-            if really_want_to_exit:
-                # self.view.close()
-                # print 'note: %s' % note
-                print 'closing'
-
-        else:
-            # self.view.close()
-            print 'closing'
+        nvpyView.notes_list.close()
 
 
 
