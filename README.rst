@@ -5,7 +5,7 @@ nvPY-gtk
 nvpy-gtk is a Gtk themed nvpy. It tries to be prettier.
 
 I have developed it on Ubuntu and that is the only place I have tested it.
-I have added a Python dependency for [arrow](http://crsmithdev.com/arrow/) to have nice times in the notes list.
+I have added a Python dependency for `arrow <http://crsmithdev.com/arrow/>`_ to have nice times in the notes list.
 
 Running
 =======
@@ -28,7 +28,7 @@ Warning
 
 Be warned that I am new to Python. If I have something done in a "non-Python" way, please let me know. I come from a Javascript and PHP back round (I still want to put semi-colons at the end of each line).
 
-I work on this in my little spare time. I wanted a prettier nvpy and have no idea if or when Simplenote will release a Linux client. [Read my thoughts on this.](http://khornberg.github.io/articles/linux-simplenote/)
+I work on this in my little spare time. I wanted a prettier nvpy and have no idea if or when Simplenote will release a Linux client. `Read my thoughts on this. <http://khornberg.github.io/articles/linux-simplenote/>`_
 
 .. image:: images/note_selected.png
 
