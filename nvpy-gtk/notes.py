@@ -54,9 +54,9 @@ class NotesList():
             # self.view.show_error('Sync error', emsg)
             exit(1)
 
-    def fill(self):
+    def fill(self, search_string=None):
         # nn is a list of (key, note) objects
-        nn, match_regexp, active_notes = self.notes_db.filter_notes()
+        nn, match_regexp, active_notes = self.notes_db.filter_notes(search_string)
         # this will trigger the list_change event
         self.notes_list_model.set_list(nn)
         self.notes_list_model.match_regexp = match_regexp
@@ -73,6 +73,9 @@ class NotesList():
         # print self.notes_list_model.list[6].note['content']
         # print self.notes_list_model.list[6].key
 
+        # necessary to clear the model for searching
+        self.model.clear()
+
         for n in self.notes_list_model.list:
             i = self.notes_list_model.list.index(n)
 
@@ -86,12 +89,12 @@ class NotesList():
             self.model.append([title_snippet, modifydate, string_of_tags, pinned, n.key])
 
 
-        # print len(nn), len(self.notes_db.notes)
+        print len(nn), len(self.notes_db.notes)
+        return len(nn)
 
     def get_note(self, key):
         idx = self.notes_list_model.get_idx(key)
         return self.notes_list_model.list[idx].note
-
 
     def close(self):
         # check that everything has been saved and synced before exiting

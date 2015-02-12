@@ -10,7 +10,7 @@ class nvpyView(Gtk.Window):
         # Map handlers from glade ui
         handlers = {
             'gtk_main_quit': Gtk.main_quit,
-            'search_notes': self.refresh_filter,
+            'search_notes': self.search_notes,
             'show_note': self.show_note,
         }
 
@@ -21,17 +21,13 @@ class nvpyView(Gtk.Window):
 
         # notes list model, class NotesListModel from nvpy.py
         # Populate model
-        #                                                           title, modtime, tags, pinned key
+        #                                                 title, modtime, tags, pinned key
         self.notes_list = NotesList(config, Gtk.ListStore(str,   str,     str,  bool,  str))
         self.notes_list.fill() # data from notes_list_model which has data from the notes_db
 
-        # Create filter
-        self.search_filter = self.notes_list.model.filter_new()
-        self.search_filter.set_visible_func(self.search_notes)
-
         # Connect model to treeview
         self.notes_treeview = self.builder.get_object('treeview1')
-        self.notes_treeview.set_model(self.search_filter)
+        self.notes_treeview.set_model(self.notes_list.model)
 
         # Text column
         title_col   = self.builder.get_object('treeviewcolumn1')
@@ -84,33 +80,13 @@ class nvpyView(Gtk.Window):
         self.window.show()
 
     # search notes
-    # only kinda works - need to look through and see how the oringial works
-    # also need to search the whole model - tags, all text, etc.
-    def search_notes(self, model, iter, data=None):
-        searchentry1 = self.builder.get_object('searchentry1')
-        search_query = searchentry1.get_text()
+    def search_notes(self, search):
+        search_query = search.get_text()
 
         print ('search of {}'.format(search_query))
 
-        if search_query == "":
-            return True
-
-        for col in range(0,self.notes_treeview.get_n_columns()):
-            value = model.get_value(iter, col).lower()
-            print ('value of {}'.format(value))
-            print (value.find(search_query))
-            if value.find(search_query) > 0:
-                return True
-            else:
-                return False
-
-        return False
-
-        # value = model.get_value(iter).lower()
-        # return True if value.startswith(search_query) else False
-
-    def refresh_filter(self, widget):
-        self.search_filter.refilter()
+        notes = self.notes_list.fill(search_query)
+        print notes
 
     def show_note(self, selection):
         key = None
