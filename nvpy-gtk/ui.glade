@@ -21,6 +21,7 @@
           <object class="GtkSearchEntry" id="searchentry1">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="has_focus">True</property>
             <property name="margin_left">4</property>
             <property name="margin_right">4</property>
             <property name="margin_top">2</property>
@@ -54,6 +55,7 @@
                   <object class="GtkTreeView" id="treeview1">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="has_focus">True</property>
                     <property name="margin_left">1</property>
                     <property name="margin_right">1</property>
                     <property name="margin_top">1</property>
