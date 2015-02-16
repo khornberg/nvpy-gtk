@@ -86,7 +86,8 @@ class nvpyView(Gtk.Window):
         print ('search of {}'.format(search_query))
 
         notes = self.notes_list.fill(search_query)
-        print notes
+
+        self.notes_treeview.set_cursor(0)
 
     def show_note(self, selection):
         key = None
