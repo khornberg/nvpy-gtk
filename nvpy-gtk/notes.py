@@ -94,6 +94,10 @@ class NotesList():
 
     def get_note(self, key):
         idx = self.notes_list_model.get_idx(key)
+
+        if idx == -1:
+            return False
+
         return self.notes_list_model.list[idx].note
 
     def close(self):
