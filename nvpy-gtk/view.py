@@ -48,6 +48,14 @@ class nvpyView(Gtk.Window):
         # Text box
         self.text_view = self.builder.get_object('textview1')
 
+        # Load tags
+        self.textbuffer = self.text_view.get_buffer()
+        tag_table = self.textbuffer.get_tag_table()
+
+        highlight_tag = tag_table.lookup("highlight")
+        if highlight_tag == None:
+            self.highlight_tag = self.textbuffer.create_tag("highlight", foreground="#000000", background="#F5F262")
+
         # Load Styles
         style_provider = Gtk.CssProvider()
 
@@ -77,6 +85,8 @@ class nvpyView(Gtk.Window):
         self.window.set_name("nvpyWindow")
         self.notes_treeview.set_name("nvpyNoteList")
 
+        self.select_note()
+
         self.window.show()
 
     # search notes
@@ -87,7 +97,11 @@ class nvpyView(Gtk.Window):
 
         notes = self.notes_list.fill(search_query)
 
-        self.notes_treeview.set_cursor(0)
+        self.select_note()
+
+    def select_note(self, position=0):
+        if len(self.notes_list.notes_list_model.list) > 0:
+            self.notes_treeview.set_cursor(position)
 
     def show_note(self, selection):
         key = None
@@ -97,8 +111,29 @@ class nvpyView(Gtk.Window):
             key = model[treeiter][4]
 
             note = self.notes_list.get_note(key)
+
+            # note does not exist
+            if note == False:
+                self.textbuffer = self.text_view.get_buffer()
+                self.textbuffer.set_text('')
+                return
+
             self.textbuffer = self.text_view.get_buffer()
             self.textbuffer.set_text(note['content'])
+
+            searchentry1 = self.builder.get_object('searchentry1')
+            search_query = searchentry1.get_text()
+            start_iter =  self.textbuffer.get_start_iter()
+
+            # recursion doesn't work
+            self.highlight(start_iter, search_query)
+
+    def highlight(self, start_iter, search_query):
+        found = start_iter.forward_search(search_query, 0, None)
+        if found:
+            match_start, match_end = found
+            self.textbuffer.apply_tag(self.highlight_tag, match_start, match_end)
+            self.highlight(match_end, search_query)
 
 
 def show():
