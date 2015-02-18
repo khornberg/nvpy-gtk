@@ -107,6 +107,7 @@
                     <property name="margin_bottom">2</property>
                     <property name="vscroll_policy">natural</property>
                     <property name="wrap_mode">word-char</property>
+                    <signal name="motion-notify-event" handler="motion_notify_event" swapped="no"/>
                   </object>
                 </child>
               </object>

@@ -3,6 +3,8 @@ from gi.repository import Gtk, Gdk, Pango
 import os
 import utils
 from notes import NotesList, NotesListModel
+import re
+import webbrowser
 
 class nvpyView(Gtk.Window):
 
@@ -12,6 +14,7 @@ class nvpyView(Gtk.Window):
             'gtk_main_quit': Gtk.main_quit,
             'search_notes': self.search_notes,
             'show_note': self.show_note,
+            'motion_notify_event': self.motion_notify_event,
         }
 
         # Build ui from glade file
@@ -50,9 +53,9 @@ class nvpyView(Gtk.Window):
 
         # Load tags
         self.textbuffer = self.text_view.get_buffer()
-        tag_table = self.textbuffer.get_tag_table()
+        self.tag_table = self.textbuffer.get_tag_table()
 
-        highlight_tag = tag_table.lookup("highlight")
+        highlight_tag = self.tag_table.lookup("highlight")
         if highlight_tag == None:
             self.highlight_tag = self.textbuffer.create_tag("highlight", foreground="#000000", background="#F5F262")
 
@@ -125,15 +128,77 @@ class nvpyView(Gtk.Window):
             search_query = searchentry1.get_text()
             start_iter =  self.textbuffer.get_start_iter()
 
-            # recursion doesn't work
-            self.highlight(start_iter, search_query)
+            # highlight search term
+            if search_query != '':
+                self.highlight(start_iter, search_query)
+
+            # create links
+            self.create_links(start_iter)
 
     def highlight(self, start_iter, search_query):
-        found = start_iter.forward_search(search_query, 0, None)
+        found = start_iter.forward_search(search_query, Gtk.TextSearchFlags.CASE_INSENSITIVE, None)
         if found:
             match_start, match_end = found
             self.textbuffer.apply_tag(self.highlight_tag, match_start, match_end)
             self.highlight(match_end, search_query)
+
+    def create_links(self, start_iter):
+
+        t = self.textbuffer.get_text(self.textbuffer.get_start_iter(), self.textbuffer.get_end_iter(), False)
+        # the last group matches [[bla bla]] inter-note links
+        pat = \
+        r"\b((https?|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]*[A-Za-z0-9+&@#/%=~_|])|(\[\[[^][]*\]\])"
+
+        for mo in re.finditer(pat, t):
+            # extract the link from the match object
+            if mo.groups()[2] is not None:
+                link = mo.groups()[2]
+                ul = 0
+            else:
+                link = mo.groups()[0]
+                ul = 1
+
+            print link
+            print ul
+
+            found = start_iter.forward_search(link, Gtk.TextSearchFlags.TEXT_ONLY, None)
+            if found:
+                match_start, match_end = found
+
+                link_tag = self.tag_table.lookup(link)
+
+                if link_tag == None:
+                    # Overriding the name and family property for my own purpose
+                    # This allows one to cleanly get the url to open instead of doing some monkey text buffer math
+                    link_tag = self.textbuffer.create_tag(link, foreground="#0000FF", underline=Pango.Underline.SINGLE)
+                    link_tag.set_property('family', 'link')
+                    link_tag.connect("event", self.open_url)
+
+                self.textbuffer.apply_tag(link_tag, match_start, match_end)
+
+                start_iter = match_end
+
+
+    # Modified from https://github.com/gossel-j/CaptainSoul/blob/master/cptsoul/htmltextview.py
+    def motion_notify_event(self, widget, event):
+        x, y = widget.get_pointer()
+        tags = widget.get_iter_at_location(x, y).get_tags()
+        for tag in tags:
+            if tag.get_property('family') == 'link':
+                window = widget.get_window(Gtk.TextWindowType.TEXT)
+                window.set_cursor(Gdk.Cursor(Gdk.CursorType.HAND2))
+
+        if tags == []:
+            window = widget.get_window(Gtk.TextWindowType.TEXT)
+            window.set_cursor(Gdk.Cursor(Gdk.CursorType.XTERM))
+
+
+    def open_url(self, tag, widget, event, l_iter):
+        if event.type == Gdk.EventType.BUTTON_RELEASE:
+            # Get the link stored in the text tag property "name"
+            # Not the correct use of the property but it works
+            url = tag.get_property('name')
+            webbrowser.open_new_tab(url)
 
 
 def show():
