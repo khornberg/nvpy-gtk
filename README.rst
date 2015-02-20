@@ -31,6 +31,7 @@ Be warned that I am new to Python. If I have something done in a "non-Python" wa
 I work on this in my little spare time. I wanted a prettier nvpy and have no idea if or when Simplenote will release a Linux client. `Read my thoughts on this. <http://khornberg.github.io/articles/linux-simplenote/>`_
 
 .. image:: images/note_selected.png
+.. image:: images/nvpy_search_highlighted.png
 
 
 ORIGINAL README
