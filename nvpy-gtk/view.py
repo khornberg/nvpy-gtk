@@ -51,6 +51,12 @@ class nvpyView(Gtk.Window):
         # Text box
         self.text_view = self.builder.get_object('textview1')
 
+        # Tags box
+        self.tags = self.builder.get_object('entry1')
+
+        # Pinned checkbox
+        self.pin_box = self.builder.get_object('checkbutton1')
+
         # Load tags
         self.textbuffer = self.text_view.get_buffer()
         self.tag_table = self.textbuffer.get_tag_table()
@@ -135,6 +141,12 @@ class nvpyView(Gtk.Window):
             # create links
             self.create_links(start_iter)
 
+            # show tags
+            self.show_tags(note)
+
+            # toggle pinned
+            self.pin(note)
+
     def highlight(self, start_iter, search_query):
         found = start_iter.forward_search(search_query, Gtk.TextSearchFlags.CASE_INSENSITIVE, None)
         if found:
@@ -200,6 +212,14 @@ class nvpyView(Gtk.Window):
             url = tag.get_property('name')
             webbrowser.open_new_tab(url)
 
+    def show_tags(self, note):
+        self.tags.set_text(', '.join(note['tags']))
+
+    def pin(self, note):
+        if 'systemtags' in note.keys() and 'pinned' in note['systemtags']:
+            self.pin_box.set_active(True)
+        else:
+            self.pin_box.set_active(False)
 
 def show():
     # Show the ui
