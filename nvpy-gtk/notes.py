@@ -15,7 +15,6 @@ class NotesListModel(SubjectMixin):
 
     def set_list(self, alist):
         self.list = alist
-        self.notify_observers('set:list', None)
 
     def get_idx(self, key):
         """Find idx for passed LOCAL key.
@@ -77,20 +76,22 @@ class NotesList():
         self.model.clear()
 
         for n in self.notes_list_model.list:
-            i = self.notes_list_model.list.index(n)
-
-            title_snippet = utils.get_note_title(n.note)
-            modifydate = utils.human_date(n.note['modifydate'])
-            tags = utils.sanitise_tags(', '.join(n.note['tags'])) # sanitise tags
-            pinned = utils.note_pinned(n.note)
-
-            string_of_tags = ', '.join(tags) # join tags for display; could be moved to utils
-
-            self.model.append([title_snippet, modifydate, string_of_tags, pinned, n.key])
+            # i = self.notes_list_model.list.index(n)
+            self.model.append(self.create_list_item(n))
 
 
         print len(nn), len(self.notes_db.notes)
         return len(nn)
+
+    def create_list_item(self, n):
+        title_snippet = utils.get_note_title(n.note)
+        modifydate = utils.human_date(n.note['modifydate'])
+        tags = utils.sanitise_tags(', '.join(n.note['tags'])) # sanitise tags
+        pinned = utils.note_pinned(n.note)
+
+        string_of_tags = ', '.join(tags) # join tags for display; could be moved to utils
+
+        return [title_snippet, modifydate, string_of_tags, pinned, n.key]
 
     def get_note(self, key):
         idx = self.notes_list_model.get_idx(key)
@@ -99,6 +100,20 @@ class NotesList():
             return False
 
         return self.notes_list_model.list[idx].note
+
+    def search_note_title(self, search_string=None):
+        # simple search by iterating through all of the notes...
+        for k in self.notes_db.notes:
+            n = self.notes_db.notes[k]
+            # we don't do anything with deleted notes (yet)
+            if n.get('deleted'):
+                continue
+
+            title = utils.get_note_title_search(n)
+            if (search_string == title):
+                return utils.KeyValueObject(key=k, note=n, tagfound=0)
+
+        return None
 
     def close(self):
         # check that everything has been saved and synced before exiting

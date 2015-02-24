@@ -28,6 +28,12 @@ def get_note_title(note):
     else:
         return ''
 
+def get_note_title_search(note):
+    mo = note_title_re.match(note.get('content', ''))
+    if mo:
+        return mo.groups()[0].strip()
+    else:
+        return ''
 
 def get_note_title_file(note):
     mo = note_title_re.match(note.get('content', ''))

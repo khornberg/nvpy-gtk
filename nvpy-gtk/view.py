@@ -210,7 +210,22 @@ class nvpyView(Gtk.Window):
             # Get the link stored in the text tag property "name"
             # Not the correct use of the property but it works
             url = tag.get_property('name')
-            webbrowser.open_new_tab(url)
+
+            if url.startswith('[['):
+                url = url[2:-2]
+                note = self.notes_list.search_note_title(url)
+                position = self.notes_list.notes_list_model.get_idx(note.key)
+                if note != None and position != -1:
+                    self.notes_treeview.set_cursor(position)
+                else:
+                    # Add to notes list
+                    self.notes_list.notes_list_model.list.append(note)
+                    # Add to model and show
+                    self.notes_list.model.append(self.notes_list.create_list_item(note))
+                    position = self.notes_list.notes_list_model.get_idx(note.key)
+                    self.notes_treeview.set_cursor(position)
+            else:
+                webbrowser.open_new_tab(url)
 
     def show_tags(self, note):
         self.tags.set_text(', '.join(note['tags']))
