@@ -9,12 +9,24 @@ import webbrowser
 class nvpyView(Gtk.Window):
 
     def __init__(self, config):
+        self.config = config
+
         # Map handlers from glade ui
         handlers = {
             'gtk_main_quit': Gtk.main_quit,
             'search_notes': self.search_notes,
             'show_note': self.show_note,
             'motion_notify_event': self.motion_notify_event,
+            # 'new_note': self.new_note,
+            # 'delete_note': self.delete_note,
+            # 'sync_note': self.sync_note,
+            # 'sync_note': self.sync_notes,
+            # 'undo_edit': self.undo_edit,
+            # 'redo_edit': self.redo_edit,
+            # 'find_note': self.find_note,
+            # 'note_word_count': self.note_word_count,
+            'help_about': self.help_about,
+            # 'help_bindings': self.help_bindings,
         }
 
         # Build ui from glade file
@@ -235,6 +247,18 @@ class nvpyView(Gtk.Window):
             self.pin_box.set_active(True)
         else:
             self.pin_box.set_active(False)
+
+    def help_about(self, widget):
+        about = self.builder.get_object('aboutdialog1')
+        about_text = 'nvPY %s is copyright 2012 by Charl P. Botha <http://charlbotha.com/>\n \
+            A rather ugly but cross-platform simplenote client. \n\n \
+            The Gtk version of nvPY is copyright 2015 by Kyle Hornberg\n \
+            A less ugly simplenote client.' % (self.config.app_version,)
+        about_label = self.builder.get_object('label2')
+        about_label.set_text(about_text)
+        response = about.run()
+        if response == Gtk.ResponseType.DELETE_EVENT or response == Gtk.ResponseType.CANCEL:
+            about.hide()
 
 def show():
     # Show the ui
