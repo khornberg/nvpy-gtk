@@ -13,7 +13,8 @@ class nvpyView(Gtk.Window):
 
         # Map handlers from glade ui
         handlers = {
-            'gtk_main_quit': Gtk.main_quit,
+            'gtk_main_quit': self.close,
+            # 'gtk_main_quit': Gtk.main_quit,
             'search_notes': self.search_notes,
             'show_note': self.show_note,
             'motion_notify_event': self.motion_notify_event,
@@ -26,7 +27,7 @@ class nvpyView(Gtk.Window):
             # 'find_note': self.find_note,
             # 'note_word_count': self.note_word_count,
             'help_about': self.help_about,
-            # 'help_bindings': self.help_bindings,
+            'help_bindings': self.help_bindings,
         }
 
         # Build ui from glade file
@@ -38,6 +39,9 @@ class nvpyView(Gtk.Window):
         # Populate model
         #                                                 title, modtime, tags, pinned key
         self.notes_list = NotesList(config, Gtk.ListStore(str,   str,     str,  bool,  str))
+        if isinstance(self.notes_list, basestring):
+            self.show_dialog(self.notes_list)
+
         self.notes_list.fill() # data from notes_list_model which has data from the notes_db
 
         # Connect model to treeview
@@ -250,15 +254,44 @@ class nvpyView(Gtk.Window):
 
     def help_about(self, widget):
         about = self.builder.get_object('aboutdialog1')
-        about_text = 'nvPY %s is copyright 2012 by Charl P. Botha <http://charlbotha.com/>\n \
-            A rather ugly but cross-platform simplenote client. \n\n \
-            The Gtk version of nvPY is copyright 2015 by Kyle Hornberg\n \
-            A less ugly simplenote client.' % (self.config.app_version,)
-        about_label = self.builder.get_object('label2')
-        about_label.set_text(about_text)
         response = about.run()
         if response == Gtk.ResponseType.DELETE_EVENT or response == Gtk.ResponseType.CANCEL:
             about.hide()
+
+    def close(self, *arg):
+        message = self.notes_list.close()
+        print message
+
+        self.show_dialog(message)
+
+    def show_dialog(self, message):
+        if message != None:
+            dialog = self.builder.get_object('messagedialog1')
+            label = self.builder.get_object('label2')
+            label.set_text(message)
+            response = dialog.run()
+
+            if response == Gtk.ResponseType.DELETE_EVENT or response == Gtk.ResponseType.YES:
+                # Yes quit
+                dialog.hide()
+                Gtk.main_quit()
+            else:
+                # No don't quit
+                # How does one stop the process?
+                # For no, I don't care what you say, I'm quitting
+                dialog.hide()
+                Gtk.main_quit()
+        else:
+            Gtk.main_quit()
+
+
+    def help_bindings(self, widget):
+        bindings = self.builder.get_object('messagedialog2')
+
+        response = bindings.run()
+
+        if response == Gtk.ResponseType.DELETE_EVENT or response == Gtk.ResponseType.OK:
+            bindings.hide()
 
 def show():
     # Show the ui

@@ -50,8 +50,8 @@ class NotesList():
         except ReadError, e:
             emsg = "Please check nvpy.log.\n" + str(e)
             print 'Sync error: %s' % emsg
-            # self.view.show_error('Sync error', emsg)
-            exit(1)
+            return emsg
+            # exit(1)
 
     def fill(self, search_string=None):
         # nn is a list of (key, note) objects
@@ -139,10 +139,12 @@ class NotesList():
                 # self.view.close()
                 # print 'note: %s' % note
                 print 'closing'
+                return msg
 
         else:
             # self.view.close()
             print 'closing'
+
 
     def helper_save_sync_msg(self):
 

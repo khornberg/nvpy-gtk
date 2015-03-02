@@ -268,7 +268,7 @@ class Controller:
         # Save before exit
         # from observer_view_close part of Controller class in nvpy.py.bak
 
-        nvpyView.notes_list.close()
+        # nvpyView.close()
 
 
 
